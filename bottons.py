@@ -23,11 +23,11 @@ add_to_wallet = KeyboardButton('Присоединиться к кошелку')
 wallet_new_old = ReplyKeyboardMarkup(resize_keyboard=True).add(new_wallet, add_to_wallet)
 
 
-cause_auto = InlineKeyboardButton(text='Авто', callback_data='auto')
-util_bills = InlineKeyboardButton(text='Ком. Услуги', callback_data='utility_bills')
-per_expenses = InlineKeyboardButton(text='Лич. расходы', callback_data='pers_expenses')
-products = InlineKeyboardButton(text='Продукты', callback_data='products')
-credit = InlineKeyboardButton(text='Кредиты', callback_data='credits')
-other = InlineKeyboardButton(text='Другое', callback_data='others')
+cause_auto = KeyboardButton(text='Авто')
+util_bills = KeyboardButton(text='Ком. Услуги')
+per_expenses = KeyboardButton(text='Лич. расходы')
+products = KeyboardButton(text='Продукты')
+credit = KeyboardButton(text='Кредиты')
+other =KeyboardButton(text='Другое')
 
-cause_buttons = InlineKeyboardMarkup().add(cause_auto, util_bills).add(per_expenses, products).add(credit, other)
+cause_buttons = ReplyKeyboardMarkup().add(cause_auto, util_bills).add(per_expenses, products).add(credit, other)

@@ -37,6 +37,11 @@ class WalletAdd(StatesGroup):
     add_wal = State()
     minus = State()
 
+class CausesGroup(StatesGroup):
+    user_id = State()
+    Wallet_id = State()
+    cause = State()
+
 
 
 
@@ -115,11 +120,8 @@ async def ask_name(message: types.Message, state: FSMContext):
 @dp.message_handler(text='Баланс')
 async def get_balance_handler(message: types.Message):
     user_id = message.from_user.id
-
     user_document = await find_user(user_id)
-
     wallet_id = user_document.get('wallet_id')
-    #print(wallet_id)
     if not wallet_id:
         await message.answer("У вас нет кошелька. Пожалуйста, создайте его или присоединитесь к существующему.",
                              reply_markup=wallet_new_old)
@@ -132,7 +134,7 @@ async def get_balance_handler(message: types.Message):
 
 
 
-
+@dp.message_handler(state=Operation.minus)
 async def minus_to_balance(message: types.Message, state: FSMContext):
     user_id = message.from_user.id
     user_document = await find_user(user_id)
@@ -157,9 +159,11 @@ async def minus_to_balance(message: types.Message, state: FSMContext):
     else:
         async with state.proxy() as data:
             data['amount'] = amount
+            data['user_id'] = user_id
+            data['wallet_id'] = wallet_id
         await message.answer(f'Выберите, причину расхода', reply_markup=cause_buttons)
+        await CausesGroup.cause.set()
 
-@dp.message_handler(state=Operation.minus)
 
 
 @dp.callback_query_handler(lambda callback_query: True)
@@ -214,93 +218,94 @@ async def handle_callback_query(callback_query: types.CallbackQuery, state:FSMCo
         expense = await get_user_incexp(user_id, False)
         await callback_query.message.answer(f'ПРИХОД  - {income}\nРАСХОД - {expense}')
 
-    elif callback_query.data == 'auto':
-        async with state.proxy() as data:
-            print(data)
-
-
-            transaction = await new_trans(wallet_id=wallet_id, user_id=user_id, amount=data['amount'],cаuse='auto', input=False)
-            name = await get_name(transaction["user_id"])
-            await bot.send_message(chat_id=Channel_id, text=f'*🔴🔴🔴РАСХОД🔴🔴🔴*\n'
-                                                            f'Автор - {name}\n'
-                                                            f'Cумма - {transaction["amount"]}\n'
-                                                            f'Причина - Для авто\n'
-                                                            f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}',
-                                   parse_mode="Markdown")
-
-            await state.finish()
-    elif callback_query.data == 'products':
-        async with state.proxy() as data:
-
-
-            transaction = await new_trans(wallet_id=wallet_id, user_id=user_id, amount=data['amount'],cаuse='products', input=False)
-            name = await get_name(transaction["user_id"])
-            await bot.send_message(chat_id=Channel_id, text=f'*🔴🔴🔴РАСХОД🔴🔴🔴*\n'
-                                                            f'Автор - {name}\n'
-                                                            f'Cумма - {transaction["amount"]}\n'
-                                                            f'Причина - Продукты\n'
-                                                            f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}',
-                                   parse_mode="Markdown")
-
-            await state.finish()
-    elif callback_query.data == 'pers_expenses':
-        async with state.proxy() as data:
-
-
-            transaction = await new_trans(wallet_id=wallet_id, user_id=user_id, amount=data['amount'],cаuse='pers_expnsees', input=False)
-            name = await get_name(transaction["user_id"])
-            await bot.send_message(chat_id=Channel_id, text=f'*🔴🔴🔴РАСХОД🔴🔴🔴*\n'
-                                                            f'Автор - {name}\n'
-                                                            f'Cумма - {transaction["amount"]}\n'
-                                                            f'Причина - Личные расходы\n'
-                                                            f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}',
-                                   parse_mode="Markdown")
-
-            await state.finish()
-    elif callback_query.data == 'utility_bills':
-        async with state.proxy() as data:
-
-
-            transaction = await new_trans(wallet_id=wallet_id, user_id=user_id, amount=data['amount'],cаuse='utility_bills', input=False)
-            name = await get_name(transaction["user_id"])
-            await bot.send_message(chat_id=Channel_id, text=f'*🔴🔴🔴РАСХОД🔴🔴🔴*\n'
-                                                            f'Автор - {name}\n'
-                                                            f'Cумма - {transaction["amount"]}\n'
-                                                            f'Причина - Коммунальные услуги\n'
-                                                            f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}',
-                                   parse_mode="Markdown")
-
-            await state.finish()
-    elif callback_query.data == 'credits':
-        async with state.proxy() as data:
-
-
-            transaction = await new_trans(wallet_id=wallet_id, user_id=user_id, amount=data['amount'],cаuse='credits', input=False)
-            name = await get_name(transaction["user_id"])
-            await bot.send_message(chat_id=Channel_id, text=f'*🔴🔴🔴РАСХОД🔴🔴🔴*\n'
-                                                            f'Автор - {name}\n'
-                                                            f'Cумма - {transaction["amount"]}\n'
-                                                            f'Причина - Кредит\n'
-                                                            f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}',
-                                   parse_mode="Markdown")
-
-            await state.finish()
-    elif callback_query.data == 'others':
-        print('----1212----')
-        async with state.proxy() as data:
-            print(data)
-
-
-            transaction = await new_trans(wallet_id=wallet_id, user_id=user_id, amount=data['amount'],cаuse='others', input=False)
-            name = await get_name(transaction["user_id"])
-            await bot.send_message(chat_id=Channel_id, text=f'*🔴🔴🔴РАСХОД🔴🔴🔴*\n'
-                                                            f'Автор - {name}\n'
-                                                            f'Cумма - {transaction["amount"]}\n'
-                                                            f'Причина - Другое\n'
-                                                            f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}',
-                                   parse_mode="Markdown")
-
-            await state.finish()
+    #
+    # elif callback_query.data == 'auto':
+    #     async with state.proxy() as data:
+    #         print(data)
+    #
+    #
+    #         transaction = await new_trans(wallet_id=wallet_id, user_id=user_id, amount=data['amount'],cаuse='auto', input=False)
+    #         name = await get_name(transaction["user_id"])
+    #         await bot.send_message(chat_id=Channel_id, text=f'*🔴🔴🔴РАСХОД🔴🔴🔴*\n'
+    #                                                         f'Автор - {name}\n'
+    #                                                         f'Cумма - {transaction["amount"]}\n'
+    #                                                         f'Причина - Для авто\n'
+    #                                                         f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}',
+    #                                parse_mode="Markdown")
+    #
+    #         await state.finish()
+    # elif callback_query.data == 'products':
+    #     async with state.proxy() as data:
+    #
+    #
+    #         transaction = await new_trans(wallet_id=wallet_id, user_id=user_id, amount=data['amount'],cаuse='products', input=False)
+    #         name = await get_name(transaction["user_id"])
+    #         await bot.send_message(chat_id=Channel_id, text=f'*🔴🔴🔴РАСХОД🔴🔴🔴*\n'
+    #                                                         f'Автор - {name}\n'
+    #                                                         f'Cумма - {transaction["amount"]}\n'
+    #                                                         f'Причина - Продукты\n'
+    #                                                         f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}',
+    #                                parse_mode="Markdown")
+    #
+    #         await state.finish()
+    # elif callback_query.data == 'pers_expenses':
+    #     async with state.proxy() as data:
+    #
+    #
+    #         transaction = await new_trans(wallet_id=wallet_id, user_id=user_id, amount=data['amount'],cаuse='pers_expnsees', input=False)
+    #         name = await get_name(transaction["user_id"])
+    #         await bot.send_message(chat_id=Channel_id, text=f'*🔴🔴🔴РАСХОД🔴🔴🔴*\n'
+    #                                                         f'Автор - {name}\n'
+    #                                                         f'Cумма - {transaction["amount"]}\n'
+    #                                                         f'Причина - Личные расходы\n'
+    #                                                         f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}',
+    #                                parse_mode="Markdown")
+    #
+    #         await state.finish()
+    # elif callback_query.data == 'utility_bills':
+    #     async with state.proxy() as data:
+    #
+    #
+    #         transaction = await new_trans(wallet_id=wallet_id, user_id=user_id, amount=data['amount'],cаuse='utility_bills', input=False)
+    #         name = await get_name(transaction["user_id"])
+    #         await bot.send_message(chat_id=Channel_id, text=f'*🔴🔴🔴РАСХОД🔴🔴🔴*\n'
+    #                                                         f'Автор - {name}\n'
+    #                                                         f'Cумма - {transaction["amount"]}\n'
+    #                                                         f'Причина - Коммунальные услуги\n'
+    #                                                         f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}',
+    #                                parse_mode="Markdown")
+    #
+    #         await state.finish()
+    # elif callback_query.data == 'credits':
+    #     async with state.proxy() as data:
+    #
+    #
+    #         transaction = await new_trans(wallet_id=wallet_id, user_id=user_id, amount=data['amount'],cаuse='credits', input=False)
+    #         name = await get_name(transaction["user_id"])
+    #         await bot.send_message(chat_id=Channel_id, text=f'*🔴🔴🔴РАСХОД🔴🔴🔴*\n'
+    #                                                         f'Автор - {name}\n'
+    #                                                         f'Cумма - {transaction["amount"]}\n'
+    #                                                         f'Причина - Кредит\n'
+    #                                                         f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}',
+    #                                parse_mode="Markdown")
+    #
+    #         await state.finish()
+    # elif callback_query.data == 'others':
+    #     print('----1212----')
+    #     async with state.proxy() as data:
+    #         print(data)
+    #
+    #
+    #         transaction = await new_trans(wallet_id=wallet_id, user_id=user_id, amount=data['amount'],cаuse='others', input=False)
+    #         name = await get_name(transaction["user_id"])
+    #         await bot.send_message(chat_id=Channel_id, text=f'*🔴🔴🔴РАСХОД🔴🔴🔴*\n'
+    #                                                         f'Автор - {name}\n'
+    #                                                         f'Cумма - {transaction["amount"]}\n'
+    #                                                         f'Причина - Другое\n'
+    #                                                         f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}',
+    #                                parse_mode="Markdown")
+    #
+    #         await state.finish()
 
 
 @dp.message_handler(state=Operation.plus_minus)
@@ -323,20 +328,30 @@ async def plus_to_balance(message: types.Message, state: FSMContext):
 
     async with state.proxy() as data:
         data['amount'] = amount
+        data['user_id'] = user_id
+        data['wallet_id'] = wallet_id
     await message.answer(f'Выберите, причину расхода', reply_markup=cause_buttons)
+    await CausesGroup.cause.set()
 
 
-#
-# @dp.message_handler(state=Operation.сause)
-# async def plus_to_balance(message: types.Message, state: FSMContext):
-#     user_id = message.from_user.id
-#     user_document = await find_user(user_id)
-#     wallet_id = user_document.get('wallet_id')
-#
-#     async with state.proxy() as data:
-#         data['cause'] =
-#
-#
+@dp.message_handler(state=CausesGroup.cause)
+async def select_casuses(message: types.Message, state: FSMContext):
+    cause = message.text
+    async with state.proxy() as data:
+        print(data)
+
+        transaction = await new_trans(wallet_id=data['wallet_id'], user_id=data['user_id'], amount=data['amount'], cаuse=cause, input=False)
+        name = await get_name(transaction["user_id"])
+        await bot.send_message(chat_id=Channel_id, text=f'*🔴🔴🔴РАСХОД🔴🔴🔴*\n'
+                                                        f'Автор - {name}\n'
+                                                        f'Cумма - {transaction["amount"]}\n'
+                                                        f'Причина - {cause}\n'
+                                                        f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}',
+                               parse_mode="Markdown")
+        balance = await get_balance(data['wallet_id'])
+        await message.answer(f'Ваш баланс - {balance}', reply_markup=walletf)
+
+        await state.finish()
 
 
 @dp.message_handler(state=Operation.plus)
