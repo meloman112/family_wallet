@@ -1,0 +1,10 @@
+
+•python:S1192–"pDefine a constant instead of duplicating this literal "Ğ’Ğ²ĞµĞ´Ğ¸Ñ‚Ğµ ĞºĞ¾Ñ€Ñ€ĞµĞºÑ‚Ğ½ÑƒÑ ÑÑƒĞ¼Ğ¼Ñƒ." 3 times.(‡ˆÍ…üÿÿÿÿ8µ±íˆÓ1
+³python:S1192"’Define a constant instead of duplicating this literal "Ğ£ Ğ²Ğ°Ñ Ğ½ĞµÑ‚ ĞºĞ¾ÑˆĞµĞ»ÑŒĞºĞ°. ĞŸĞ¾Ğ¶Ğ°Ğ»ÑƒĞ¹ÑÑ‚Ğ°, ÑĞ¾Ğ·Ğ´Ğ°Ğ¹Ñ‚Ğµ ĞµĞ³Ğ¾." 4 times.(ß¯Ó£8¶±íˆÓ1
+epython:S2208"GImport only needed names or import the module and then use its members.(ÒŒşT8¶±íˆÓ1
+kpython:S2208	"GImport only needed names or import the module and then use its members.(»ªÏ´øÿÿÿÿ8¶±íˆÓ1
+kpython:S2208
+"GImport only needed names or import the module and then use its members.(ò”…ÿÿÿÿÿ8¶±íˆÓ1
+<python:S125"Remove this commented out code.(²—›78¶±íˆÓ1
+ypython:S3776„"TRefactor this function to reduce its Cognitive Complexity from 25 to the 15 allowed.(ì•ÿ’ÿÿÿÿÿ8¶±íˆÓ1
+hsecrets:S6694"PMake sure this MongoDB database password gets changed and removed from the code.(²—›7
