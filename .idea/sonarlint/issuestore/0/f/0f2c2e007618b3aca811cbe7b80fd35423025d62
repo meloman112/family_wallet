@@ -1,0 +1,8 @@
+
+epython:S5797-"HReplace this expression; used as a condition it will always be constant.(™É¨şÿÿÿÿ
+5python:S125"Remove this commented out code.(²—›7
+python:S117!"cRename this local variable "wallet_id_ObjectId" to match the regular expression ^[_a-z][a-z0-9_]*$.(ÊŸ˜³úÿÿÿÿ
+{python:S3923-"^This conditional expression returns the same value whether the condition is "true" or "false".(™É¨şÿÿÿÿ
+6python:S125F"Remove this commented out code.(¹´Òä
+;python:S125J"Remove this commented out code.(¿œØóûÿÿÿÿ
+hsecrets:S6694"PMake sure this MongoDB database password gets changed and removed from the code.(²—›7

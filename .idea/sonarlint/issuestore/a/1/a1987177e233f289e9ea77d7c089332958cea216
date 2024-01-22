@@ -1,0 +1,5 @@
+
+5python:S125"Remove this commented out code.(²—›7
+ipython:S117"RRename this parameter "cÐ°use" to match the regular expression ^[_a-z][a-z0-9_]*$.(ÇÞö¬
+6python:S125V"Remove this commented out code.(ÆÔœ¦
+hsecrets:S6694"PMake sure this MongoDB database password gets changed and removed from the code.(²—›7
