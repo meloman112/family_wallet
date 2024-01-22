@@ -166,6 +166,96 @@ async def minus_to_balance(message: types.Message, state: FSMContext):
 
 
 
+
+
+@dp.message_handler(state=Operation.plus_minus)
+async def plus_to_balance(message: types.Message, state: FSMContext):
+    user_id = message.from_user.id
+    user_document = await find_user(user_id)
+    wallet_id = user_document.get('wallet_id')
+    if not wallet_id:
+        await message.answer("У вас нет кошелька. Пожалуйста, создайте его.")
+        await state.finish()
+        return
+    try:
+        amount = int(message.text)
+    except ValueError:
+        await message.answer("Введите корректную сумму.")
+        await Operation.plus_minus.set()
+        return
+
+    balance = await add_to_wallet(wallet_id, amount)
+    transaction = await new_trans(wallet_id, user_id, amount, None, True)
+    name = await get_name(transaction["user_id"])
+    await bot.send_message(chat_id=Channel_id, text=f'🟢🟢🟢ПРИХОД🟢🟢🟢\n'
+                                                    f'Автор - {name}\n'
+                                                    f'Cумма - {transaction["amount"]}\n'
+                                                    f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}')
+
+    balance_minus = await subtract_from_balance(wallet_id, amount)
+    async with state.proxy() as data:
+        data['amount'] = amount
+        data['user_id'] = user_id
+        data['wallet_id'] = wallet_id
+    await message.answer(f'Выберите, причину расхода', reply_markup=cause_buttons)
+    await CausesGroup.cause.set()
+
+
+
+
+@dp.message_handler(state=Operation.plus)
+async def plus_to_balance(message: types.Message, state: FSMContext):
+    user_id = message.from_user.id
+
+    user_document = await find_user(user_id)
+
+    wallet_id = user_document.get('wallet_id')
+    if not wallet_id:
+        await message.answer("У вас нет кошелька. Пожалуйста, создайте его.")
+        await state.finish()
+        return
+
+    try:
+        amount = int(message.text)
+    except ValueError:
+        await message.answer("Введите корректную сумму.")
+        await Operation.plus.set()
+
+        return
+
+    balance = await add_to_wallet(wallet_id, amount)
+    await message.answer(f'Ваш баланс - {balance}', reply_markup=walletf)
+    transaction = await new_trans(wallet_id, user_id, amount, None, True)
+    name = await get_name(transaction["user_id"])
+    await bot.send_message(chat_id=Channel_id, text=f'ПРИХОД\n'
+                                                    f'Автор - {name}\n'
+                                                    f'Cумма - {transaction["amount"]}\n'
+                                                    f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}')
+
+    await state.finish()
+
+
+@dp.message_handler(state=CausesGroup.cause)
+async def select_casuses(message: types.Message, state: FSMContext):
+    cause = message.text
+    async with state.proxy() as data:
+        print(data)
+
+        transaction = await new_trans(wallet_id=data['wallet_id'], user_id=data['user_id'], amount=data['amount'], cаuse=cause, input=False)
+        name = await get_name(transaction["user_id"])
+        await bot.send_message(chat_id=Channel_id, text=f'*🔴🔴🔴РАСХОД🔴🔴🔴*\n'
+                                                        f'Автор - {name}\n'
+                                                        f'Cумма - {transaction["amount"]}\n'
+                                                        f'Причина - {cause}\n'
+                                                        f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}',
+                               parse_mode="Markdown")
+        balance = await get_balance(data['wallet_id'])
+        await message.answer('Расход успешно внесен', reply_markup=ReplyKeyboardRemove())
+        await message.answer(f'Ваш баланс - {balance}', reply_markup=walletf)
+
+        await state.finish()
+
+
 @dp.callback_query_handler(lambda callback_query: True)
 async def handle_callback_query(callback_query: types.CallbackQuery, state:FSMContext):
     # Обработка нажатия на кнопку
@@ -306,84 +396,6 @@ async def handle_callback_query(callback_query: types.CallbackQuery, state:FSMCo
     #                                parse_mode="Markdown")
     #
     #         await state.finish()
-
-
-@dp.message_handler(state=Operation.plus_minus)
-async def plus_to_balance(message: types.Message, state: FSMContext):
-    user_id = message.from_user.id
-    user_document = await find_user(user_id)
-    wallet_id = user_document.get('wallet_id')
-    if not wallet_id:
-        await message.answer("У вас нет кошелька. Пожалуйста, создайте его.")
-        await state.finish()
-        return
-    try:
-        amount = int(message.text)
-    except ValueError:
-        await message.answer("Введите корректную сумму.")
-        await Operation.plus_minus.set()
-        return
-
-    balance = await add_to_wallet(wallet_id, amount)
-
-    async with state.proxy() as data:
-        data['amount'] = amount
-        data['user_id'] = user_id
-        data['wallet_id'] = wallet_id
-    await message.answer(f'Выберите, причину расхода', reply_markup=cause_buttons)
-    await CausesGroup.cause.set()
-
-
-@dp.message_handler(state=CausesGroup.cause)
-async def select_casuses(message: types.Message, state: FSMContext):
-    cause = message.text
-    async with state.proxy() as data:
-        print(data)
-
-        transaction = await new_trans(wallet_id=data['wallet_id'], user_id=data['user_id'], amount=data['amount'], cаuse=cause, input=False)
-        name = await get_name(transaction["user_id"])
-        await bot.send_message(chat_id=Channel_id, text=f'*🔴🔴🔴РАСХОД🔴🔴🔴*\n'
-                                                        f'Автор - {name}\n'
-                                                        f'Cумма - {transaction["amount"]}\n'
-                                                        f'Причина - {cause}\n'
-                                                        f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}',
-                               parse_mode="Markdown")
-        balance = await get_balance(data['wallet_id'])
-        await message.answer(f'Ваш баланс - {balance}', reply_markup=walletf)
-
-        await state.finish()
-
-
-@dp.message_handler(state=Operation.plus)
-async def plus_to_balance(message: types.Message, state: FSMContext):
-    user_id = message.from_user.id
-
-    user_document = await find_user(user_id)
-
-    wallet_id = user_document.get('wallet_id')
-    if not wallet_id:
-        await message.answer("У вас нет кошелька. Пожалуйста, создайте его.")
-        await state.finish()
-        return
-
-    try:
-        amount = int(message.text)
-    except ValueError:
-        await message.answer("Введите корректную сумму.")
-        await Operation.plus.set()
-
-        return
-
-    balance = await add_to_wallet(wallet_id, amount)
-    await message.answer(f'Ваш баланс - {balance}', reply_markup=walletf)
-    transaction = await new_trans(wallet_id, user_id, amount, None, True)
-    name = await get_name(transaction["user_id"])
-    await bot.send_message(chat_id=Channel_id, text=f'ПРИХОД\n'
-                                                    f'Автор - {name}\n'
-                                                    f'Cумма - {transaction["amount"]}\n'
-                                                    f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}')
-
-    await state.finish()
 
 
 async def send_message(user_id, text: str):

@@ -30,4 +30,4 @@ products = KeyboardButton(text='Продукты')
 credit = KeyboardButton(text='Кредиты')
 other =KeyboardButton(text='Другое')
 
-cause_buttons = ReplyKeyboardMarkup().add(cause_auto, util_bills).add(per_expenses, products).add(credit, other)
+cause_buttons = ReplyKeyboardMarkup(resize_keyboard=True).add(cause_auto, util_bills).add(per_expenses, products).add(credit, other)
