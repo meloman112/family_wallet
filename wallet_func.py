@@ -4,17 +4,17 @@ from pprint import pprint
 import asyncio
 import pymongo
 from users_func import add_wallet
-# clinet = mt.AsyncIOMotorClient('mongodb+srv://wallet_user:QGJ9aeA4zgVSxO5J@cluster0.eqlglqy.mongodb.net/FamilyWallet_db?retryWrites=true&w=majority')
-# collection = clinet.FamilyWallet_db.Collection_wallet
+clinet = mt.AsyncIOMotorClient('mongodb+srv://wallet_user:QGJ9aeA4zgVSxO5J@cluster0.eqlglqy.mongodb.net/FamilyWallet_db?retryWrites=true&w=majority')
+collection = clinet.FamilyWallet_db.Collection_wallet
 
 from bson import ObjectId
 
-
-client = mt.AsyncIOMotorClient('localhost', 27017)
-
-current_db = client['Wallet_db']
-
-collection = current_db['wallets']
+#
+# client = mt.AsyncIOMotorClient('localhost', 27017)
+#
+# current_db = client['Wallet_db']
+#
+# collection = current_db['wallets']
 
 
 async def new_wallet(user_id):

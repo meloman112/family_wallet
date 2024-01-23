@@ -188,7 +188,7 @@ async def plus_to_balance(message: types.Message, state: FSMContext):
     await add_to_wallet(wallet_id, amount)
     transaction = await new_trans(wallet_id, user_id, amount, None, True)
     name = await get_name(transaction["user_id"])
-    await bot.send_message(chat_id=Channel_id, text=f'🟢🟢🟢ПРИХОД🟢🟢🟢\n'
+    await bot.send_message(chat_id=Channel_id, text=f'🟡🟡🟡ПРИХОД🟡🟡🟡\n'
                                                     f'Автор - {name}\n'
                                                     f'Cумма - {transaction["amount"]}\n'
                                                     f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}')
@@ -228,7 +228,7 @@ async def plus_to_balance(message: types.Message, state: FSMContext):
     await message.answer(f'Ваш баланс - {balance}', reply_markup=walletf)
     transaction = await new_trans(wallet_id, user_id, amount, None, True)
     name = await get_name(transaction["user_id"])
-    await bot.send_message(chat_id=Channel_id, text=f'ПРИХОД\n'
+    await bot.send_message(chat_id=Channel_id, text=f'🟢🟢🟢ПРИХОД🟢🟢🟢\n'
                                                     f'Автор - {name}\n'
                                                     f'Cумма - {transaction["amount"]}\n'
                                                     f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}')

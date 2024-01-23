@@ -11,11 +11,17 @@ import pymongo
 import matplotlib.pyplot as plt
 from users_func import get_name
 
-client = mt.AsyncIOMotorClient('localhost', 27017)
+# client = mt.AsyncIOMotorClient('localhost', 27017)
+#
+# current_db = client['Wallet_db']
+#
+# collection = current_db['transaction_collection']
+#
 
-current_db = client['Wallet_db']
 
-collection = current_db['transaction_collection']
+clinet = mt.AsyncIOMotorClient('mongodb+srv://wallet_user:QGJ9aeA4zgVSxO5J@cluster0.eqlglqy.mongodb.net/FamilyWallet_db?retryWrites=true&w=majority')
+collection = clinet.FamilyWallet_db.Collection_Transactions
+
 
 
 async def get_expenses(wallet_id):
@@ -53,13 +59,13 @@ async def plot(target_month, wallet_id):
     names = []
     for name in causes:
         names.append(await get_name(name))
-    print(names)
+
     # Суммирование расходов по причинам
     result = sum_by_cause(names, amounts)
 
     plt.pie(list(result.values()), labels=list(result.keys()), autopct='%1.1f%%')
     plt.savefig('circle_diogram_income.png')
-
+    pprint(result)
     return result
 
 
@@ -93,9 +99,9 @@ def sum_by_cause(causes, amounts):
         cause_amount_dict[cause] += amount
 
     return cause_amount_dict
-#
-#
-# async def main():
-#     print(await plot(target_month=1, wallet_id=bson.ObjectId('65a2b6104216000d5c688cb5')))
-# if __name__ == '__main__':
-#     asyncio.run(main())
+
+
+async def main():
+    print(await plot(target_month=1, wallet_id=bson.ObjectId('65a2b6104216000d5c688cb5')))
+if __name__ == '__main__':
+    asyncio.run(main())
