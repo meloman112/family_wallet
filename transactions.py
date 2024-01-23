@@ -5,20 +5,20 @@ import asyncio
 import time
 from pprint import pprint
 import pymongo
-# clinet = mt.AsyncIOMotorClient('mongodb+srv://wallet_user:QGJ9aeA4zgVSxO5J@cluster0.eqlglqy.mongodb.net/FamilyWallet_db?retryWrites=true&w=majority')
-# collection = clinet.FamilyWallet_db.Collection_wallet
+clinet = mt.AsyncIOMotorClient('mongodb+srv://wallet_user:QGJ9aeA4zgVSxO5J@cluster0.eqlglqy.mongodb.net/FamilyWallet_db?retryWrites=true&w=majority')
+collection = clinet.FamilyWallet_db.Collection_Transactions
 
 from bson import ObjectId
-
-client = mt.AsyncIOMotorClient('localhost', 27017)
-
-current_db = client['Wallet_db']
-
-collection = current_db['transaction_collection']
+#
+# client = mt.AsyncIOMotorClient('localhost', 27017)
+#
+# current_db = client['Wallet_db']
+#
+# collection = current_db['transaction_collection']
 
 
 async def new_trans(wallet_id, user_id, amount: int, cаuse,  input: bool):
-    print('------------------------success-----------------')
+    #print('------------------------success-----------------')
     date = datetime.now(pytz.UTC)
     trans_info = {
         'wallet_id': wallet_id,
@@ -79,7 +79,7 @@ async def get_income_of_date(wallet_id, year, month, input: bool):
     }).sort('date', pymongo.DESCENDING)
     # Получаем список транзакций и считаем сумму
     transactions = await transactions_cursor.to_list(length=None)
-    pprint(transactions)
+    #pprint(transactions)
     total_income = sum(transaction['amount'] for transaction in transactions)
 
     return total_income

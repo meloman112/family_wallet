@@ -188,7 +188,7 @@ async def plus_to_balance(message: types.Message, state: FSMContext):
     await add_to_wallet(wallet_id, amount)
     transaction = await new_trans(wallet_id, user_id, amount, None, True)
     name = await get_name(transaction["user_id"])
-    await bot.send_message(chat_id=Channel_id, text=f'🟢🟢🟢ПРИХОД🟢🟢🟢\n'
+    await bot.send_message(chat_id=Channel_id, text=f'🟡🟡🟡ПРИХОД🟡🟡🟡\n'
                                                     f'Автор - {name}\n'
                                                     f'Cумма - {transaction["amount"]}\n'
                                                     f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}')
@@ -228,7 +228,7 @@ async def plus_to_balance(message: types.Message, state: FSMContext):
     await message.answer(f'Ваш баланс - {balance}', reply_markup=walletf)
     transaction = await new_trans(wallet_id, user_id, amount, None, True)
     name = await get_name(transaction["user_id"])
-    await bot.send_message(chat_id=Channel_id, text=f'ПРИХОД\n'
+    await bot.send_message(chat_id=Channel_id, text=f'🟢🟢🟢ПРИХОД🟢🟢🟢\n'
                                                     f'Автор - {name}\n'
                                                     f'Cумма - {transaction["amount"]}\n'
                                                     f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}')
@@ -262,7 +262,8 @@ async def handle_callback_query(callback_query: types.CallbackQuery, state:FSMCo
     # Обработка нажатия на кнопку
     await bot.answer_callback_query(callback_query.id)
     user_id = callback_query.message.chat.id
-
+    user_document = await find_user(user_id)
+    wallet_id = user_document['wallet_id'] if user_document else None
 
     # В зависимости от того, какая кнопка была нажата, выполняется соответствующее действие
     if callback_query.data == 'plus':
@@ -275,8 +276,7 @@ async def handle_callback_query(callback_query: types.CallbackQuery, state:FSMCo
         await bot.send_message(callback_query.message.chat.id, 'Введите сумму расхода')
         await Operation.minus.set()
     elif callback_query.data == 'transactions':
-        user_document = await find_user(user_id)
-        wallet_id = user_document['wallet_id'] if user_document else None
+
 
         if wallet_id:
             transactions = await (get_wallet_id(wallet_id) if callback_query.data == 'transactions' else get_user_id(user_id=user_id))
@@ -294,6 +294,8 @@ async def handle_callback_query(callback_query: types.CallbackQuery, state:FSMCo
             income = await get_income_or_expense(wallet_id, True)
             expense = await get_income_or_expense(wallet_id, False)
             await callback_query.message.answer(f'ПРИХОД  - {income}\nРАСХОД - {expense}')
+            balance = await get_balance(wallet_id)
+            await callback_query.message.answer(f'Ваш баланс - {balance}', reply_markup=walletf)
         else:
             await callback_query.message.answer("У вас нет кошелька. Пожалуйста, создайте его.")
     elif callback_query.data == 'my_transactions':
@@ -307,6 +309,8 @@ async def handle_callback_query(callback_query: types.CallbackQuery, state:FSMCo
         income = await get_user_incexp(user_id, True)
         expense = await get_user_incexp(user_id, False)
         await callback_query.message.answer(f'ПРИХОД  - {income}\nРАСХОД - {expense}')
+        balance = await get_balance(wallet_id)
+        await callback_query.message.answer(f'Ваш баланс - {balance}', reply_markup=walletf)
 
 
 
@@ -321,6 +325,7 @@ async def static(message: types.Message):
         text += f'{key}: {value}\n'
     photo = open('circle_diogram_income.png', 'rb')
     await bot.send_photo(message.chat.id, photo, caption = text)
+
 
 @dp.message_handler(commands = ['analysis'])
 async def analysis(message: types.Message):
