@@ -8,6 +8,7 @@ from bottons import wellcome, send_contact, walletf, wallet_new_old, cause_butto
 from wallet_func import *
 from transactions import *
 from users_func import *
+from static import plot, create_circle
 
 Channel_id = -1002014290958
 
@@ -308,6 +309,30 @@ async def handle_callback_query(callback_query: types.CallbackQuery, state:FSMCo
         await callback_query.message.answer(f'ПРИХОД  - {income}\nРАСХОД - {expense}')
 
 
+
+@dp.message_handler(commands = ['static'])
+async def static(message: types.Message):
+    user_id = message.from_user.id
+    user_document = await find_user(user_id)
+    wallet_id = user_document.get('wallet_id')
+    caption = await plot(1, wallet_id)
+    text = str()
+    for key, value in caption.items():
+        text += f'{key}: {value}\n'
+    photo = open('circle_diogram_income.png', 'rb')
+    await bot.send_photo(message.chat.id, photo, caption = text)
+
+@dp.message_handler(commands = ['analysis'])
+async def analysis(message: types.Message):
+    user_id = message.from_user.id
+    user_document = await find_user(user_id)
+    wallet_id = user_document.get('wallet_id')
+    caption = await create_circle(1, wallet_id)
+    text = str()
+    for key, value in caption.items():
+        text += f'{key}: {value}\n'
+    photo = open('circle_diogram.png', 'rb')
+    await bot.send_photo(message.chat.id, photo, caption = text)
 
 
 async def send_message(user_id, text: str):
