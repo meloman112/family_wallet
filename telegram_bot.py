@@ -326,6 +326,7 @@ async def static(message: types.Message):
     photo = open('circle_diogram_income.png', 'rb')
     await bot.send_photo(message.chat.id, photo, caption = text)
 
+
 @dp.message_handler(commands = ['analysis'])
 async def analysis(message: types.Message):
     user_id = message.from_user.id
