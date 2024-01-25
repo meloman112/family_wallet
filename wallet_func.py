@@ -32,7 +32,7 @@ async def new_user_wallet(wallet_id, user_id):
     if ObjectId.is_valid(wallet_id):
         wallet_id_ObjectId = ObjectId(wallet_id)
         find_and_update = await collection.update_one({'_id': wallet_id_ObjectId}, {"$push": {"users_id": user_id}})
-        print(find_and_update.matched_count, find_and_update.modified_count)
+        #print(find_and_update.matched_count, find_and_update.modified_count)
         return True
     else:
         return False
@@ -64,6 +64,11 @@ async def subtract_from_balance(wallet_id, amount: int):
 
 
 async def get_balance(wallet_id):
+    wallet = await collection.find_one({'_id': wallet_id})
+    return wallet['balance']
+
+async def update_balance(wallet_id, amount):
+    await collection.update_one({'_id': wallet_id}, {'$set': {'balance': amount}})
     wallet = await collection.find_one({'_id': wallet_id})
     return wallet['balance']
 
