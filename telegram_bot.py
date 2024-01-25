@@ -330,10 +330,11 @@ async def static(message: types.Message):
 
 @dp.message_handler(commands = ['analysis'])
 async def analysis(message: types.Message):
+    date = datetime.now().strftime('%m')
     user_id = message.from_user.id
     user_document = await find_user(user_id)
     wallet_id = user_document.get('wallet_id')
-    caption = await create_circle(1, wallet_id)
+    caption = await create_circle(date, wallet_id)
     text = str()
     for key, value in caption.items():
         text += f'{key}: {value}\n'
