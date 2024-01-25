@@ -8,7 +8,7 @@ from bottons import wellcome, send_contact, walletf, wallet_new_old, cause_butto
 from wallet_func import *
 from transactions import *
 from users_func import *
-from static import plot, create_circle
+from static import plot, create_circle, get_expenses, get_income
 
 Channel_id = -1002014290958
 
@@ -188,7 +188,7 @@ async def plus_to_balance(message: types.Message, state: FSMContext):
     await add_to_wallet(wallet_id, amount)
     transaction = await new_trans(wallet_id, user_id, amount, None, True)
     name = await get_name(transaction["user_id"])
-    await bot.send_message(chat_id=Channel_id, text=f'🟡🟡🟡ПРИХОД🟡🟡🟡\n'
+    await bot.send_message(chat_id=Channel_id, text=f'🟡ПРИХОД\n'
                                                     f'Автор - {name}\n'
                                                     f'Cумма - {transaction["amount"]}\n'
                                                     f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}')
@@ -228,7 +228,7 @@ async def plus_to_balance(message: types.Message, state: FSMContext):
     await message.answer(f'Ваш баланс - {balance}', reply_markup=walletf)
     transaction = await new_trans(wallet_id, user_id, amount, None, True)
     name = await get_name(transaction["user_id"])
-    await bot.send_message(chat_id=Channel_id, text=f'🟢🟢🟢ПРИХОД🟢🟢🟢\n'
+    await bot.send_message(chat_id=Channel_id, text=f'🟢ПРИХОД\n'
                                                     f'Автор - {name}\n'
                                                     f'Cумма - {transaction["amount"]}\n'
                                                     f'Дата - {transaction["date"].strftime("%Y-%m-%d %H:%M:%S")}')
@@ -240,11 +240,11 @@ async def plus_to_balance(message: types.Message, state: FSMContext):
 async def select_casuses(message: types.Message, state: FSMContext):
     cause = message.text
     async with state.proxy() as data:
-        print(data)
+        #print(data)
 
         transaction = await new_trans(wallet_id=data['wallet_id'], user_id=data['user_id'], amount=data['amount'], cаuse=cause, input=False)
         name = await get_name(transaction["user_id"])
-        await bot.send_message(chat_id=Channel_id, text=f'*🔴🔴🔴РАСХОД🔴🔴🔴*\n'
+        await bot.send_message(chat_id=Channel_id, text=f'*🔴РАСХОД*\n'
                                                         f'Автор - {name}\n'
                                                         f'Cумма - {transaction["amount"]}\n'
                                                         f'Причина - {cause}\n'
@@ -293,11 +293,10 @@ async def handle_callback_query(callback_query: types.CallbackQuery, state:FSMCo
 
             income = await get_income_or_expense(wallet_id, True)
             expense = await get_income_or_expense(wallet_id, False)
-            await callback_query.message.answer(f'ПРИХОД  - {income}\nРАСХОД - {expense}')
-            balance = await get_balance(wallet_id)
-            await callback_query.message.answer(f'Ваш баланс - {balance}', reply_markup=walletf)
+            await callback_query.message.answer(f'ПРИХОД  - {income}\nРАСХОД - {expense}', reply_markup=wellcome)
+
         else:
-            await callback_query.message.answer("У вас нет кошелька. Пожалуйста, создайте его.")
+            await callback_query.message.answer("У вас нет кошелька. Пожалуйста, создайте его.", reply_markup=wellcome)
     elif callback_query.data == 'my_transactions':
         transactions = await get_user_id(user_id=user_id)
         for trans in transactions:
@@ -316,15 +315,17 @@ async def handle_callback_query(callback_query: types.CallbackQuery, state:FSMCo
 
 @dp.message_handler(commands = ['static'])
 async def static(message: types.Message):
+    date = datetime.now().strftime('%m')
+    #print(date)
     user_id = message.from_user.id
     user_document = await find_user(user_id)
     wallet_id = user_document.get('wallet_id')
-    caption = await plot(1, wallet_id)
+    caption = await plot(date, wallet_id)
     text = str()
     for key, value in caption.items():
         text += f'{key}: {value}\n'
     photo = open('circle_diogram_income.png', 'rb')
-    await bot.send_photo(message.chat.id, photo, caption = text)
+    await bot.send_photo(message.chat.id, photo, caption = text, reply_markup=wellcome)
 
 
 @dp.message_handler(commands = ['analysis'])
@@ -337,8 +338,24 @@ async def analysis(message: types.Message):
     for key, value in caption.items():
         text += f'{key}: {value}\n'
     photo = open('circle_diogram.png', 'rb')
-    await bot.send_photo(message.chat.id, photo, caption = text)
+    await bot.send_photo(message.chat.id, photo, caption = text, reply_markup=wellcome)
 
+
+@dp.message_handler(commands = ['balance_correction'])
+async def help(message: types.Message):
+    user_id = message.from_user.id
+    user_document = await find_user(user_id)
+    wallet_id = user_document.get('wallet_id')
+    exppenses = await get_expenses(wallet_id)
+    incomes = await get_income(wallet_id)
+    amount_incomes, amount_expenses = 0, 0
+    for income in incomes:
+        amount_incomes += income['amount']
+    for expense in exppenses:
+        amount_expenses += expense['amount']
+    balance = amount_incomes - amount_expenses
+    new_balance = await update_balance(wallet_id, balance)
+    await bot.send_message(message.chat.id, f'Ваш баланс - {balance}', reply_markup=walletf)
 
 async def send_message(user_id, text: str):
     await bot.send_message(user_id, text)
